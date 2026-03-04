@@ -93,12 +93,17 @@ export const trackedCreators = pgTable("tracked_creators", {
   postCaption: text("post_caption"),
   postMediaUrl: text("post_media_url"),
 permalink: text("permalink"),
-engagement: jsonb("engagement").$type<{ followers: number; followings: number }>(),
-//   platformUserId: text("platform_user_id"),
-//   followersCount: integer("followers_count"),
-//   isVerified: boolean("is_verified").default(false),
-//   imaiReportId: text("imai_report_id"),
-//   imaiStatus: text("imai_status").$type<"pending" | "added" | "failed" | "skipped">().default("pending"),
+engagement: jsonb("engagement").$type<{
+  followers?: number;
+  followings?: number;
+  likes?: number;
+  comments?: number;
+}>(),
+  platformUserId: text("platform_user_id"),
+  followersCount: integer("followers_count"),
+  isVerified: boolean("is_verified").default(false),
+  imaiReportId: text("imai_report_id"),
+  imaiStatus: text("imai_status").$type<"pending" | "added" | "failed" | "skipped">().default("pending"),
 }, (table) => [
   index("idx_tracked_creators_client_id").on(table.clientId),
   index("idx_tracked_creators_username").on(table.username),

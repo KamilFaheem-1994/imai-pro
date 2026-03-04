@@ -1,6 +1,3 @@
-import { InstagramSearchResult } from "@/types/instagram";
-import { TikTokSearchResult } from "@/types/tiktok";
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 // Response types matching backend controller responses

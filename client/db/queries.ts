@@ -973,6 +973,7 @@ export async function discoverCreators(
           postId: post.postId,
           postCaption: post.content?.caption || null,
           postMediaUrl: post.content?.displayUrl || null,
+          permalink: post.permalink || null,
           engagement: post.engagement,
           addedToImai: false,
           imaiAddedAt: null,

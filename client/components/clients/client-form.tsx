@@ -197,6 +197,13 @@ export function ClientForm({
                         engagement: engagement as { followers: number; followings: number } | null,
                         addedToImai: false,
                         imaiAddedAt: null,
+                      imaiReportId: null,
+                        platformUserId:
+                          post.creator?.platformUserId || post.creator?.id || null,
+                        followersCount:
+                          post.creator?.followersCount || post.creator?.followers || null,
+                        isVerified: post.creator?.isVerified || false,
+                        imaiStatus: "pending",
                     });
 
                     existingUsernames.add(username.toLowerCase());

@@ -90,7 +90,10 @@ export function CreatorsTable({
       case "platform":
         return dir * a.platform.localeCompare(b.platform);
       case "followers":
-        return dir * ((a.followersCount ?? 0) - (b.followersCount ?? 0));
+        return (
+          dir *
+          ((a.engagement?.followers ?? 0) - (b.engagement?.followers ?? 0))
+        );
       case "discovered_at":
         return (
           dir *
