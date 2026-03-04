@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Search API</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        h1 { color: #333; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
+        pre { background: #f4f4f4; padding: 16px; border-radius: 8px; overflow-x: auto; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f8f8f8; }
+    </style>
+</head>
+<body>
+    <h1>Instagram Search API</h1>
+    <p>API server is running.</p>
+
+    <h2>Endpoints</h2>
+    <table>
+        <tr><th>Endpoint</th><th>Method</th><th>Description</th></tr>
+        <tr><td><code>/api/instagram/search?keyword={keyword}</code></td><td>GET</td><td>Search posts by hashtag or username</td></tr>
+        <tr><td><code>/api/instagram/test</code></td><td>GET</td><td>Test Instagram connection</td></tr>
+        <tr><td><code>/api/instagram/account</code></td><td>GET</td><td>Get logged-in account info</td></tr>
+        <tr><td><code>/api/instagram/logout</code></td><td>POST</td><td>Logout from Instagram</td></tr>
+    </table>
+
+    <h2>Example</h2>
+    <pre>curl "http://localhost:4000/api/instagram/search?keyword=travel"</pre>
+</body>
+</html>
