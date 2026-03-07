@@ -8,8 +8,7 @@ const clientCheckScheduler = require('../services/clientCheckScheduler');
  * GET /api/instagram/webhook?hub.mode=subscribe&hub.verify_token=...&hub.challenge=...
  * @see https://developers.facebook.com/docs/graph-api/webhooks/getting-started
  */
-exports.webhookVerify = (req, res) => {
-    res.status(200).send('Verify Webhook Token');   //http://localhost:4000/api/instagram/webhook/verifytoken
+exports.webhookVerify = (req, res) => {  //http://localhost:4000/api/instagram/webhook/verifytoken
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
