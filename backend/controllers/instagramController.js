@@ -8,68 +8,108 @@ const clientCheckScheduler = require('../services/clientCheckScheduler');
  * GET /api/instagram/webhook?hub.mode=subscribe&hub.verify_token=...&hub.challenge=...
  * @see https://developers.facebook.com/docs/graph-api/webhooks/getting-started
  */
-exports.webhookVerify = (req, res) => {  //http://localhost:4000/api/instagram/webhook/verifytoken
-    const mode = req.query['hub.mode'];
-    const token = req.query['hub.verify_token'];
-    const challenge = req.query['hub.challenge'];
+exports.webhook = (req, res) => {  //http://localhost:4000/api/instagram/webhook/verifytoken
+    try{
+    if(req.method === "GET"){
+      console.log('[Instagram Webhook] Received GET webhook for verification:', req.query);
+      const mode = req.query['hub.mode'];
+      const token = req.query['hub.verify_token'];
+      const challenge = req.query['hub.challenge'];
 
-    const verifyToken = process.env.WEBHOOK_VERIFY_TOKEN || 'instagram_story_mention_verify';
+      const verifyToken = process.env.WEBHOOK_VERIFY_TOKEN || 'instagram_story_mention_verify';
 
-    if (mode === 'subscribe' && token === verifyToken) {
-        console.log('[Instagram Webhook] Verification successful');
-        res.status(200).send(challenge);
-    } else {
-        console.warn('[Instagram Webhook] Verification failed: mode or token mismatch');
-        res.status(403).send('Forbidden');
+      if (mode === 'subscribe' && token === verifyToken) {
+          console.log('[Instagram Webhook] Verification successful');
+          res.status(200).send(challenge);
+      } else {
+          console.warn('[Instagram Webhook] Verification failed: mode or token mismatch');
+          res.status(403).send('Forbidden');
+      }
     }
+    else if(req.method === "POST"){
+      console.log('[Instagram Webhook] Received POST webhook:', JSON.stringify(req.body));
+      const body = req.body;
+      // Validate webhook payload
+      if (!body || !body.entry) {
+          console.warn('[Instagram Webhook] Invalid payload structure');
+          return res.status(400).json({ success: false, error: 'Invalid payload' });
+      }
+      // Process entries asynchronously
+      body.entry.forEach((entry) => {
+          // Handle live comments
+          if (entry.changes) {
+              entry.changes.forEach((change) => {
+                  if (change.field === 'live_comments') {
+                      handleLiveComment(change.value);
+                  }
+              });
+          }
+
+          // Handle story mentions and other messaging events
+          if (entry.messaging) {
+              entry.messaging.forEach((msg) => {
+                  handleStoryMention(msg);
+              });
+          }
+      });
+      // Return 200 OK immediately to acknowledge receipt
+      res.status(200).json({ success: true, body: body });
+    }
+  }
+  catch (error) {
+      console.error('[Instagram Webhook] Error processing webhook:', error.message);
+      res.status(500).json({ success: false, error: error.message });
+  }
 };
+/**
+ * Handle live comment from Instagram live stream.
+ * 
+ * @param {object} liveComment - { from: { id, username, self_ig_scoped_id }, media: { id, media_product_type }, id, text }
+ */
+function handleLiveComment(liveComment) {
+    try {
+        console.log('[Live Comment] Received:', {
+            username: liveComment.from?.username,
+            userId: liveComment.from?.id,
+            mediaId: liveComment.media?.id,
+            mediaType: liveComment.media?.media_product_type,
+            commentId: liveComment.id,
+            text: liveComment.text,
+        });
+
+        // TODO: Store live comment in database
+        // TODO: Trigger any business logic (e.g., notifications, analytics)
+
+        // Example: Could add tracking creator if not already tracked
+        if (liveComment.from?.username) {
+            console.log(`[Live Comment] Creator: @${liveComment.from.username}`);
+            // Could call addTrackedCreators here if needed
+        }
+    } catch (error) {
+        console.error('[Live Comment] Error handling comment:', error.message);
+    }
+}
 
 /**
- * Instagram webhook receiver (Story Mention and other events).
- * POST /api/instagram/webhook
- * Payload: { object: "instagram", entry: [{ id, time, messaging: [{ sender, recipient, message: { attachments } }] }] }
- * @see https://developers.facebook.com/docs/messenger-platform/instagram/features/story-mention
- * Policy: Do not store media content; may store CDN URL only.
+ * Handle story mention from Instagram.
+ * 
+ * @param {object} message - { sender, recipient, message }
  */
-exports.webhookStoryMention = (req, res) => {
-    // Respond 200 immediately so Meta does not retry
-    res.status(200).send('OK');
+function handleStoryMention(message) {
+    try {
+        console.log('[Story Mention] Received:', {
+            sender: message.sender?.id,
+            recipient: message.recipient?.id,
+            text: message.message?.text,
+        });
 
-    const body = req.body;
-    if (!body || body.object !== 'instagram') {
-        return;
+        // TODO: Store story mention in database
+        // TODO: Trigger any business logic
+    } catch (error) {
+        console.error('[Story Mention] Error handling mention:', error.message);
     }
+}
 
-    const entries = body.entry || [];
-    for (const entry of entries) {
-        const igId = entry.id;
-        const messaging = entry.messaging || [];
-        for (const evt of messaging) {
-            const message = evt.message;
-            if (!message || !message.attachments) continue;
-
-            for (const att of message.attachments) {
-                if (att.type === 'story_mention' && att.payload && att.payload.url) {
-                    const cdnUrl = att.payload.url;
-                    const senderId = evt.sender?.id;
-                    const recipientId = evt.recipient?.id;
-                    const mid = message.mid;
-
-                    // Allowed: store CDN URL only (not media content). Do not cache media on server.
-                    console.log('[Instagram Webhook] Story mention:', {
-                        mid,
-                        senderId,
-                        recipientId,
-                        igId,
-                        cdnUrl: cdnUrl.substring(0, 60) + '...',
-                    });
-
-                    // Optional: persist CDN URL for your app (e.g. for agent inbox). Omitted here.
-                }
-            }
-        }
-    }
-};
 
 /**
  * Transform IMAI IG hashtag feed response into the standard post shape

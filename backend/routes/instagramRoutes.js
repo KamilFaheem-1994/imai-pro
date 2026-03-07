@@ -5,8 +5,10 @@ const instagramController = require('../controllers/instagramController');
 /**
  * Instagram API Routes
  */
-router.get('/api/instagram/webhook/verifytoken', instagramController.webhookVerify);
-router.post('/api/instagram/webhook/story-mention', instagramController.webhookStoryMention);
+// Webhook verification (GET)
+router.get('/api/instagram/webhook', instagramController.webhook);
+router.post('/api/instagram/webhook', instagramController.webhook);
+// Search endpoint
 router.get('/api/instagram/search', instagramController.searchPosts);
 
 module.exports = router;
